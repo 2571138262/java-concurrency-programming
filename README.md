@@ -125,6 +125,9 @@
 ###### 比AB更强大， 用的最多的
 ##### 4、代码 ： Semaphore、CountDownLatch等 对并发的模拟 
 ###### CountDownLatch类 向下减的 可以阻塞线程， 当线程满足一定的条件才可以向下执行
+    countDownLatch这个类使一个线程等待其他线程各自执行完毕后再执行。
+    是通过一个计数器来实现的，计数器的初始值是线程的数量。每当一个线程执行完毕后，计数器的值就-1，
+    当计数器的值为0时，表示所有线程都执行完毕，然后在闭锁上等待的线程就可以恢复工作了。
 ###### Semaphore 信号量  也可以阻塞线程
 
 ### 线程安全性
@@ -152,4 +155,38 @@
     
 ###### ActomicLong、 LongAdder(jdk1.8)
 ###### LongAdder 优点：
+    因为CAS底层实现是在一个while死循环内，不断的尝试修改目标值，直到修改成功，在竞争不激烈的时候，它修改成功的概率很高，如果竞争激烈额话，它修改失败的概率就很高，这个时候性能就会受到影响
+    对于普通类型的long、double类型，JVM允许将64位的读操作或者写操作，拆成俩个32位操作
+###### LongAdder原理实现：
+    是将热点数据分离，比如可以将AtomicLong内部核心数据value，分离成一个数组，每个线程访问时，通过Hash等算法，映射到其中一个数字进行计数，最终的计数结果则为这个数组的求和累加，
+    其中热点数据value会被分离成多个单元的shell，每个shell独自维护内部的值，当前对象的值由所有shell累计合成，这样就进行了有效的分离并提高了并行度，
+    这样一来LongAdder就在AtomicLong的基础上将单点的压力分担在各个节点上，
+    在低并发的时候通过对底层base的更新达到和AtomicLong一样的效果，
+    在高并发的时候通过分担节点来提高性能
+    
+    缺点: 
+        在统计的时候，如果有并发更新，统计的结果会有一些误差
+        
+###### AtomicReference、AtomicReferenceFieldUpdater 
+###### AtomicStampReference : CAS 的 ABA 问题
+    什么是CAS的ABA问题？
+        ABA问题是指在CAS操作的时候其他线程将变量的值A改成了B，然后有改成了A，
+        本线程在CAS操作的时候发现当前底层变量的值和工作内存中的值相等，进而进行了更新操作，
+        这个时候实际上值已经被其他线程修改过， 这与CAS本身的设计思想是不相符的    
+    ABA的解决思路：
+        每次变量更新的时候将变量的版本号加1，1A -> 2B -> 3A 
+###### AtomicStameReference源码
+    public boolean weakCompareAndSet(V   expectedReference,
+                                         V   newReference,
+                                         // 期望的版本号
+                                         int expectedStamp,
+                                         // 新的版本号
+                                         int newStamp) {
+            return compareAndSet(expectedReference, newReference,
+                                 expectedStamp, newStamp);
+        }
+        
+###### AtomicLongArray
+    和 AtomicLong方法基本类似， 只是会多加了一个索引值参数
+###### 实例 AtomicBoolean 中的compareAndSet(boolean expect, boolean update) 
     
