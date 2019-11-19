@@ -15,6 +15,10 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 @ThreadSafe
 public class AtomicBooleanExample {
 
+    /**
+     * 应用场景 : 保证某一段代码在多线程的情况下只执行一次 
+     */
+    
     private static AtomicBoolean isHappened = new AtomicBoolean(false);
 
     // 请求总数
