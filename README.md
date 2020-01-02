@@ -26,7 +26,7 @@
 ##### Java内存模型规范: 
     规定了一个线程如何核实看到由其他线程修改后的共享变量的值，以及在必须是如何同步的访问共享变量。
 ##### 堆：
-###### java中的堆是一个运行时数据区，堆是由垃圾回收来负责的，
+###### java中的堆是一个运行时 数据区，堆是由垃圾回收来负责的，
     堆的优势是： 可以动态的分配内存大小，生存期也不必事先告诉编译器，因为它是在运行时动态分配内存的，java的垃圾收集器会自动搜索这些不再需要的数据
     堆的缺点是： 由于是在运行时动态分配内存，因此存取速度相对慢一些
 ##### 栈：
@@ -463,12 +463,15 @@
      如果我们设置的corePoolSize和maximumPoolSize相同的话，那么创建的线程池大小是固定的，这个时候如果workQueue没满的时候，就将新的任务放到workQueue里，等待有线程空闲的时候再去处理这个任务
      如果运行的线程数量大于maximumPoolSize的时候，并且这个时候workQueue也已经满了，这个时候需要决策参数来指定策略
 ###### 2、maximumPoolSize ： 线程最大线程数
-###### 3、workQueue ： 阻塞队列，存储等待执行的任务，很重要，会对线程运行过程产生重大影响
+#####(重要) 3、workQueue ： 阻塞队列，存储等待执行的任务，很重要，会对线程运行过程产生重大影响
     它是保存等待执行任务的一个阻塞队列，当我们提交一个新的任务到线程池以后，线程池会根据当前正在执行的线程的数量来决定该任务的处理方式
     处理方式有三种：
-        直接切换 ---- synchronizedQueue
-        使用无界队列 ---- LinkedBlockingQueue
-        使用有界队列 ---- 
+        SynchronousQueue ---- 没有容量，是无缓冲等待队列
+        LinkedBlockingQueue ---- 无界缓存等待队列 
+        ArrayBlockingQueue ---- 有界缓存等待队列 
+###### SynchronousQueue没有容量，是无缓冲等待队列，是一个不存储元素的阻塞队列，会直接将任务交给消费者，必须等队列中的添加元素被消费后才能继续添加新的元素。拥有公平（FIFO）和非公平(LIFO)策略，非公平侧罗会导致一些数据永远无法被消费的情况？使用SynchronousQueue阻塞队列一般要求maximumPoolSizes为无界，避免线程拒绝执行操作。
+###### LinkedBlockingQueue是一个无界缓存等待队列。当前执行的线程数量达到corePoolSize的数量时，剩余的元素会在阻塞队列里等待。（所以在使用此阻塞队列时maximumPoolSizes就相当于无效了），每个线程完全独立于其他线程。生产者和消费者使用独立的锁来控制数据的同步，即在高并发的情况下可以并行操作队列中的数据。
+###### ArrayBlockingQueue是一个有界缓存等待队列，可以指定缓存队列的大小，当正在执行的线程数等于corePoolSize时，多余的元素缓存在ArrayBlockingQueue队列中等待有空闲的线程时继续执行，当ArrayBlockingQueue已满时，加入ArrayBlockingQueue失败，会开启新的线程去执行，当线程数已经达到最大的maximumPoolSizes时，再有新的元素尝试加入ArrayBlockingQueue时会报错。
 ###### keepAliveTime : 线程没有任务执行时最多保存多久时间终止（线程池维护线程所允许的空闲时间）
     当线程池中的线程数量大于corePoolSize时，如果没有新的任务提交，核心线程外的线程不会立即销毁，而是会等待，知道等待的时间超过了keepAliveTime
 ###### unit ：keepAliveTime的时间单位
