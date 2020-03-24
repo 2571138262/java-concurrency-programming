@@ -36,7 +36,7 @@ public class FutureExample {
         Future<String> future1 = exec.submit(new MyRunnable(), "Done");
         log.info("do somethings in main");
         Thread.sleep(1000);
-        
+         
         // 从Future对象中取得任务结果 
         String result = future.get();
         log.info("result: {}", result);
